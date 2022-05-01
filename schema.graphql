@@ -1,0 +1,32 @@
+type SumRewardYear @entity {
+  id: ID!
+  account: String
+  amount: BigInt
+  blockNumber: BigInt
+  timestamp: Date
+}
+
+type SumRewardMonth @entity {
+  id: ID!
+  account: String
+  amount: BigInt
+  blockNumber: BigInt
+  timestamp: Date
+}
+type SumRewardDay @entity {
+  id: ID!
+  account: String
+  amount: BigInt
+  blockNumber: BigInt
+  timestamp: Date
+  sumRewardMonth: SumRewardMonth!
+  sumRewardYear: SumRewardYear!
+}
+
+type Reward @entity {
+  id: ID!
+  account: String
+  amount: BigInt
+  blockNumber: BigInt
+  timestamp: Date
+}
