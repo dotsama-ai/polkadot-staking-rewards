@@ -18,32 +18,36 @@ function getId(eventID: string, accountID: string, timestamp: Date | number, typ
 }
 
 export async function handleBlock(block: SubstrateBlock): Promise<void> {    
-    let blockNumber = block.block.header.number.toBigInt();
+    try {
+        let blockNumber = block.block.header.number.toBigInt();
 
-    let events = block.events;
-    for (let i = 0; i < events.length; i++) {
-        let eventRecord = events[i];
-        let method = eventRecord.event.method
-        let section = eventRecord.event.section
+        let events = block.events;
+        for (let i = 0; i < events.length; i++) {
+            let eventRecord = events[i];
+            let method = eventRecord.event.method
+            let section = eventRecord.event.section
 
-        if (section="staking") {
-            switch (method) {
-                case "Rewarded":
-                    logger.info("====> event record => "+eventRecord.event.toJSON())
-                    const [account, amount] = eventRecord.event.data.toJSON() as [string, bigint];
-                    let eventID = eventRecord.event.index.toString()
+            if (section="staking") {
+                switch (method) {
+                    case "Rewarded":
+                        logger.info("====> event record => "+eventRecord.event.toJSON())
+                        const [account, amount] = eventRecord.event.data.toJSON() as [string, bigint];
+                        let eventID = eventRecord.event.index.toString()
 
-                    await saveSumRewardYear(block.timestamp, blockNumber, account, amount, eventID)
-                    await saveSumRewardMonth(block.timestamp, blockNumber, account, amount, eventID)
-                    await saveSumRewardDay(block.timestamp, blockNumber, account, amount, eventID)
-                    await saveReward(block.timestamp, blockNumber, account, amount, eventID)
+                        await saveSumRewardYear(block.timestamp, blockNumber, account, amount, eventID)
+                        await saveSumRewardMonth(block.timestamp, blockNumber, account, amount, eventID)
+                        await saveSumRewardDay(block.timestamp, blockNumber, account, amount, eventID)
+                        await saveReward(block.timestamp, blockNumber, account, amount, eventID)
 
-                    break;
-                default:
-                    break;
+                        break;
+                    default:
+                        break;
+                }
             }
-        }
 
+        }
+    } catch (err) {
+        logger.error(`handleBlock err: ${err} `);
     }
 }
 
