@@ -59,7 +59,6 @@ export async function saveSumRewardYear(timestamp: Date, blockNumber: bigint, ac
     if (!record) {
         record = SumRewardYear.create({
             id: id,
-            amount: amount,
             account: account,
             blockNumber: blockNumber,
             timestamp: timestamp
@@ -87,7 +86,6 @@ export async function saveSumRewardMonth(timestamp: Date, blockNumber: bigint, a
     if (!record) {
         record = SumRewardMonth.create({
             id: id,
-            amount: amount,
             account: account,
             blockNumber: blockNumber,
             timestamp: timestamp
@@ -118,8 +116,7 @@ export async function saveSumRewardDay(timestamp: Date, blockNumber: bigint, acc
     if (!record) {
         record = SumRewardDay.create({
             id: id,
-            amount: amount,
-            account: account,
+            account: account ,
             blockNumber: blockNumber,
             timestamp: timestamp,
             sumRewardMonthId: rewardMonth.id,
