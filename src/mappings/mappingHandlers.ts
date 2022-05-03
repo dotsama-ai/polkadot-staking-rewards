@@ -6,11 +6,11 @@ function getId(eventID: string, accountID: string, timestamp: Date | number, typ
     let record_id = accountID + '_'
     
     if(type==="y"){
-        record_id = record_id + (typeof(timestamp)==="number"?timestamp:date.getFullYear())
+        record_id = record_id + (typeof(timestamp)==="number"?timestamp:date.getUTCFullYear())
     } else if(type==="m")  {
-        record_id = record_id + date.getFullYear() + '_' + date.getMonth()
+        record_id = record_id + date.getUTCFullYear() + '_' + date.getUTCMonth()
     } else if(type==="d") {
-        record_id = record_id + date.getFullYear() + '_' + date.getMonth() + '_' + date.getDate()
+        record_id = record_id + date.getUTCFullYear() + '_' + date.getUTCMonth() + '_' + date.getUTCDate()
     } else {
         record_id = record_id + eventID;
     }
@@ -52,8 +52,8 @@ export async function handleBlock(block: SubstrateBlock): Promise<void> {
 }
 
 export async function saveSumRewardYear(timestamp: Date, blockNumber: bigint, account: string, amount: bigint, eventID: string): Promise<void> {
-    logger.info("Saving SumRewardYear for account!: " + account);
     let id = getId(eventID, account, timestamp, 'y')
+    logger.info("Saving SumRewardYear for id!: " + id);
 
     let record = await SumRewardYear.get(id);
     if (!record) {
@@ -69,7 +69,6 @@ export async function saveSumRewardYear(timestamp: Date, blockNumber: bigint, ac
     record.blockNumber = blockNumber;
     record.timestamp = timestamp;
     record.txCount = record.txCount?record.txCount+BigInt(1):BigInt(1);
-    logger.info("record amount is: " + record.amount)
     await record.save().then((res) => {
         logger.info("SumRewardYear added/saved =>"+ res)
     })
@@ -79,8 +78,8 @@ export async function saveSumRewardYear(timestamp: Date, blockNumber: bigint, ac
 }
 
 export async function saveSumRewardMonth(timestamp: Date, blockNumber: bigint, account: string, amount: bigint, eventID: string): Promise<void> {
-    logger.info("Saving SumRewardMonth for account!: " + account);
     let id = getId(eventID, account, timestamp, 'm')
+    logger.info("Saving SumRewardMonth for id!: " + id);
 
     let record = await SumRewardMonth.get(id);
     if (!record) {
@@ -97,7 +96,6 @@ export async function saveSumRewardMonth(timestamp: Date, blockNumber: bigint, a
     record.blockNumber = blockNumber;
     record.timestamp = timestamp;
     record.txCount = record.txCount?record.txCount+BigInt(1):BigInt(1);
-    logger.info("record amount is: " + record.amount)
     await record.save().then((res) => {
         logger.info("SumRewardMonth added/saved =>"+ res)
     })
@@ -107,8 +105,8 @@ export async function saveSumRewardMonth(timestamp: Date, blockNumber: bigint, a
 }
 
 export async function saveSumRewardDay(timestamp: Date, blockNumber: bigint, account: string, amount: bigint, eventID: string): Promise<void> {
-    logger.info("Saving SumRewardDay for account!: " + account);
     let id = getId(eventID, account, timestamp, 'd')
+    logger.info("Saving SumRewardDay for id!: " + id);
 
     let rewardMonth = await getSumRewardMonth(timestamp, blockNumber, account, amount, eventID)
     let rewardYear = await getSumRewardYear(timestamp, blockNumber, account, amount, eventID)
@@ -128,7 +126,6 @@ export async function saveSumRewardDay(timestamp: Date, blockNumber: bigint, acc
     record.blockNumber = blockNumber;
     record.timestamp = timestamp;
     record.txCount = record.txCount?record.txCount+BigInt(1):BigInt(1);
-    logger.info("record amount is: " + record.amount)
     record.sumRewardMonthId = rewardMonth.id
     record.sumRewardYearId = rewardYear.id
 
@@ -141,8 +138,8 @@ export async function saveSumRewardDay(timestamp: Date, blockNumber: bigint, acc
 }
 
 export async function saveReward(timestamp: Date, blockNumber: bigint, account: string, amount: bigint, eventID: string): Promise<void> {
-    logger.info("Saving Reward for account!: " + account);
     let id = getId(eventID, account, timestamp, '')
+    logger.info("Saving Reward for id!: " + id);
 
     let record = await Reward.get(id);
     if (!record) {
