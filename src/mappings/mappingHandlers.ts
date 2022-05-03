@@ -62,14 +62,14 @@ export async function saveSumRewardYear(timestamp: Date, blockNumber: bigint, ac
             account: account,
             blockNumber: blockNumber,
             timestamp: timestamp
-
         });
     }
     
-    record.amount = record.amount?record.amount+amount:amount;
+    record.amount = record.amount?record.amount+BigInt(amount):BigInt(amount);
     record.blockNumber = blockNumber;
     record.timestamp = timestamp;
-
+    record.txCount = record.txCount?record.txCount+BigInt(1):BigInt(1);
+    logger.info("record amount is: " + record.amount)
     await record.save().then((res) => {
         logger.info("SumRewardYear added/saved =>"+ res)
     })
@@ -93,10 +93,11 @@ export async function saveSumRewardMonth(timestamp: Date, blockNumber: bigint, a
         });
     }
 
-    record.amount = record.amount?record.amount+amount:amount;
+    record.amount = record.amount?record.amount+BigInt(amount):BigInt(amount);
     record.blockNumber = blockNumber;
     record.timestamp = timestamp;
-
+    record.txCount = record.txCount?record.txCount+BigInt(1):BigInt(1);
+    logger.info("record amount is: " + record.amount)
     await record.save().then((res) => {
         logger.info("SumRewardMonth added/saved =>"+ res)
     })
@@ -123,10 +124,11 @@ export async function saveSumRewardDay(timestamp: Date, blockNumber: bigint, acc
             sumRewardYearId: rewardYear.id
         });
     }
-    record.amount = record.amount?record.amount+amount:amount;
+    record.amount = record.amount?record.amount+BigInt(amount):BigInt(amount);
     record.blockNumber = blockNumber;
     record.timestamp = timestamp;
-
+    record.txCount = record.txCount?record.txCount+BigInt(1):BigInt(1);
+    logger.info("record amount is: " + record.amount)
     record.sumRewardMonthId = rewardMonth.id
     record.sumRewardYearId = rewardYear.id
 

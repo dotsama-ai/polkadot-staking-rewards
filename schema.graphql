@@ -4,6 +4,7 @@ type SumRewardYear @entity {
   amount: BigInt
   blockNumber: BigInt
   timestamp: Date
+  txCount: BigInt
 }
 
 type SumRewardMonth @entity {
@@ -12,6 +13,7 @@ type SumRewardMonth @entity {
   amount: BigInt
   blockNumber: BigInt
   timestamp: Date
+  txCount: BigInt
 }
 type SumRewardDay @entity {
   id: ID!
@@ -21,6 +23,7 @@ type SumRewardDay @entity {
   timestamp: Date
   sumRewardMonth: SumRewardMonth!
   sumRewardYear: SumRewardYear!
+  txCount: BigInt
 }
 
 type Reward @entity {
