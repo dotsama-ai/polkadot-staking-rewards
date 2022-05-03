@@ -150,7 +150,7 @@ export async function saveReward(timestamp: Date, blockNumber: bigint, account: 
             timestamp: timestamp
         });
     }
-    record.amount = record.amount;
+    record.amount = BigInt(record.amount);
     record.blockNumber = blockNumber;
     record.timestamp = timestamp;
 
