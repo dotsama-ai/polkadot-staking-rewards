@@ -23,6 +23,8 @@ type SumRewardDay @entity {
   timestamp: Date
   sumRewardMonth: SumRewardMonth!
   sumRewardYear: SumRewardYear!
+  sumRewardLastMonth: SumRewardMonth
+  sumRewardLastYear: SumRewardYear
   txCount: BigInt
 }
 
