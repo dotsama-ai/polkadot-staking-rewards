@@ -35,3 +35,19 @@ type Reward @entity {
   blockNumber: BigInt
   timestamp: Date
 }
+
+type Bonded @entity {
+  id: ID!
+  account: String
+  amount: BigInt
+  blockNumber: BigInt
+  timestamp: Date
+}
+
+type Unbonded @entity {
+  id: ID!
+  account: String
+  amount: BigInt
+  blockNumber: BigInt
+  timestamp: Date
+}

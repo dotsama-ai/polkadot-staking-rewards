@@ -1,5 +1,5 @@
 import {SubstrateBlock} from "@subql/types";
-import {SumRewardYear, SumRewardMonth, SumRewardDay,Reward} from "../types";
+import {SumRewardYear, SumRewardMonth, SumRewardDay,Reward, Bonded, Unbonded} from "../types";
 
 function getId(blockNumber: bigint, eventID: string, accountID: string, timestamp: Date, type="no", ){
     let record_id = accountID + '_'
@@ -38,6 +38,21 @@ export async function handleBlock(block: SubstrateBlock): Promise<void> {
                         await saveSumRewardDay(block.timestamp, blockNumber, account, amount, eventID)
                         await saveReward(block.timestamp, blockNumber, account, amount, eventID)
 
+                        break;
+                    case "Bonded":
+                        logger.info("====> event record=> " + JSON.stringify(eventRecord))
+                        const [accountb, amountb] = eventRecord.event.data.toJSON() as [string, bigint];
+                        let eventIDb = eventRecord.phase.asApplyExtrinsic.toString()
+
+                        await saveBonded(block.timestamp, blockNumber, accountb, amountb, eventIDb)
+
+                        break;
+                    case "Unbonded":
+                        logger.info("====> event record=> " + JSON.stringify(eventRecord))
+                        const [accountu, amountu] = eventRecord.event.data.toJSON() as [string, bigint];
+                        let eventIDu = eventRecord.phase.asApplyExtrinsic.toString()
+
+                        await saveUnbonded(block.timestamp, blockNumber, accountu, amountu, eventIDu)
                         break;
                     default:
                         break;
@@ -175,6 +190,56 @@ export async function saveReward(timestamp: Date, blockNumber: bigint, account: 
     });
 }
  
+export async function saveBonded(timestamp: Date, blockNumber: bigint, account: string, amount: bigint, eventID: string): Promise<void> {
+    let id = getId(blockNumber, eventID, account, timestamp, '')
+    logger.info("Saving Bonded for id!: " + id);
+
+    let record = await Bonded.get(id);
+    if (!record) {
+        record = Bonded.create({
+            id: id,
+            account: account,
+            blockNumber: blockNumber,
+            timestamp: timestamp
+        });
+    }
+    record.amount = amount as unknown as bigint;
+    record.blockNumber = blockNumber;
+    record.timestamp = timestamp;
+
+    await record.save().then((res) => {
+        //logger.info("Reward added/saved =>"+ res)
+    })
+    .catch((err) => {
+        logger.info("Bonded err => " + err)
+    });
+}
+
+export async function saveUnbonded(timestamp: Date, blockNumber: bigint, account: string, amount: bigint, eventID: string): Promise<void> {
+    let id = getId(blockNumber, eventID, account, timestamp, '')
+    logger.info("Saving Unbonded for id!: " + id);
+
+    let record = await Unbonded.get(id);
+    if (!record) {
+        record = Unbonded.create({
+            id: id,
+            account: account,
+            blockNumber: blockNumber,
+            timestamp: timestamp
+        });
+    }
+    record.amount = amount as unknown as bigint;
+    record.blockNumber = blockNumber;
+    record.timestamp = timestamp;
+
+    await record.save().then((res) => {
+        //logger.info("Reward added/saved =>"+ res)
+    })
+    .catch((err) => {
+        logger.info("Unbonded err => " + err)
+    });
+}
+
 export async function getSumRewardMonth(timestamp: Date, blockNumber: bigint, account: string, amount: bigint, eventID: string): Promise<SumRewardMonth> {
     let monthId = getId(blockNumber, eventID, account, timestamp, 'm')
     return await SumRewardMonth.get(monthId)
