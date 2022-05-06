@@ -26,6 +26,7 @@
   },
   "dependencies": {},
   "resolutions": {
-    "ipfs-unixfs": "6.0.6"
+    "ipfs-unixfs": "6.0.6",
+    "@polkadot/util": "8.3.3"
   } 
 }
