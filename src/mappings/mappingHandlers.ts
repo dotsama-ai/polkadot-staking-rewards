@@ -1,7 +1,7 @@
 import {SubstrateBlock} from "@subql/types";
-import {SumRewardYear, SumRewardMonth, SumRewardDay,Reward, Bonded, Unbonded} from "../types";
+import {SumRewardYear, SumRewardMonth, SumRewardDay,Reward, Bonded, Unbonded, SumBondedMonth, SumUnbondedMonth} from "../types";
 
-function getId(blockNumber: bigint, eventID: string, accountID: string, timestamp: Date, type="no", ){
+function getAccountId(blockNumber: bigint, eventID: string, accountID: string, timestamp: Date, type="no", ){
     let record_id = accountID + '_'
 
     if(type==="y"){
@@ -15,6 +15,22 @@ function getId(blockNumber: bigint, eventID: string, accountID: string, timestam
     }
     return record_id
 }
+
+function getId(blockNumber: bigint, eventID: string, accountID: string, timestamp: Date, type="no", ){
+    let record_id = ''
+
+    if(type==="y"){
+        record_id = record_id + timestamp.getUTCFullYear()
+    } else if(type==="m")  {
+        record_id = record_id + timestamp.getUTCFullYear() + '_' + timestamp.getUTCMonth()
+    } else if(type==="d") {
+        record_id = record_id + timestamp.getUTCFullYear() + '_' + timestamp.getUTCMonth() + '_' + timestamp.getUTCDate()
+    } else {
+        record_id = record_id + blockNumber + "_" +eventID;
+    }
+    return record_id
+}
+
 
 export async function handleBlock(block: SubstrateBlock): Promise<void> {    
     try {
@@ -45,6 +61,7 @@ export async function handleBlock(block: SubstrateBlock): Promise<void> {
                         let eventIDb = eventRecord.phase.asApplyExtrinsic.toString()
 
                         await saveBonded(block.timestamp, blockNumber, accountb, amountb, eventIDb)
+                        await saveSumBondedMonth(block.timestamp, blockNumber, accountb, amountb, eventIDb)
 
                         break;
                     case "Unbonded":
@@ -53,6 +70,7 @@ export async function handleBlock(block: SubstrateBlock): Promise<void> {
                         let eventIDu = eventRecord.phase.asApplyExtrinsic.toString()
 
                         await saveUnbonded(block.timestamp, blockNumber, accountu, amountu, eventIDu)
+                        await saveSumUnbondedMonth(block.timestamp, blockNumber, accountu, amountu, eventIDu)
                         break;
                     default:
                         break;
@@ -66,7 +84,7 @@ export async function handleBlock(block: SubstrateBlock): Promise<void> {
 }
 
 export async function saveSumRewardYear(timestamp: Date, blockNumber: bigint, account: string, amount: bigint, eventID: string): Promise<void> {
-    let id = getId(blockNumber, eventID, account, timestamp, 'y')
+    let id = getAccountId(blockNumber, eventID, account, timestamp, 'y')
     logger.info("Saving SumRewardYear for id!: " + id);
 
     let record = await SumRewardYear.get(id);
@@ -92,7 +110,7 @@ export async function saveSumRewardYear(timestamp: Date, blockNumber: bigint, ac
 }
 
 export async function saveSumRewardMonth(timestamp: Date, blockNumber: bigint, account: string, amount: bigint, eventID: string): Promise<void> {
-    let id = getId(blockNumber, eventID, account, timestamp, 'm')
+    let id = getAccountId(blockNumber, eventID, account, timestamp, 'm')
     logger.info("Saving SumRewardMonth for id!: " + id);
 
     let record = await SumRewardMonth.get(id);
@@ -119,7 +137,7 @@ export async function saveSumRewardMonth(timestamp: Date, blockNumber: bigint, a
 }
 
 export async function saveSumRewardDay(timestamp: Date, blockNumber: bigint, account: string, amount: bigint, eventID: string): Promise<void> {
-    let id = getId(blockNumber, eventID, account, timestamp, 'd')
+    let id = getAccountId(blockNumber, eventID, account, timestamp, 'd')
     logger.info("Saving SumRewardDay for id!: " + id);
 
     let rewardMonth = await getSumRewardMonth(timestamp, blockNumber, account, amount, eventID)
@@ -166,7 +184,7 @@ export async function saveSumRewardDay(timestamp: Date, blockNumber: bigint, acc
 }
 
 export async function saveReward(timestamp: Date, blockNumber: bigint, account: string, amount: bigint, eventID: string): Promise<void> {
-    let id = getId(blockNumber, eventID, account, timestamp, '')
+    let id = getAccountId(blockNumber, eventID, account, timestamp, '')
     logger.info("Saving Reward for id!: " + id);
 
     let record = await Reward.get(id);
@@ -191,7 +209,7 @@ export async function saveReward(timestamp: Date, blockNumber: bigint, account: 
 }
  
 export async function saveBonded(timestamp: Date, blockNumber: bigint, account: string, amount: bigint, eventID: string): Promise<void> {
-    let id = getId(blockNumber, eventID, account, timestamp, '')
+    let id = getAccountId(blockNumber, eventID, account, timestamp, '')
     logger.info("Saving Bonded for id!: " + id);
 
     let record = await Bonded.get(id);
@@ -215,8 +233,33 @@ export async function saveBonded(timestamp: Date, blockNumber: bigint, account: 
     });
 }
 
+export async function saveSumBondedMonth(timestamp: Date, blockNumber: bigint, account: string, amount: bigint, eventID: string): Promise<void> {
+    let id = getId(blockNumber, eventID, account, timestamp, 'm')
+    logger.info("Saving SumBondedMonth for id!: " + id);
+
+    let record = await SumBondedMonth.get(id);
+    if (!record) {
+        record = SumBondedMonth.create({
+            id: id,
+            account: account,
+            blockNumber: blockNumber,
+            timestamp: timestamp
+        });
+    }
+    record.amount = record.amount?record.amount+BigInt(amount):BigInt(amount);
+    record.blockNumber = blockNumber;
+    record.timestamp = timestamp;
+
+    await record.save().then((res) => {
+        //logger.info("Reward added/saved =>"+ res)
+    })
+    .catch((err) => {
+        logger.info("SumBondedMonth err => " + err)
+    });
+}
+
 export async function saveUnbonded(timestamp: Date, blockNumber: bigint, account: string, amount: bigint, eventID: string): Promise<void> {
-    let id = getId(blockNumber, eventID, account, timestamp, '')
+    let id = getAccountId(blockNumber, eventID, account, timestamp, '')
     logger.info("Saving Unbonded for id!: " + id);
 
     let record = await Unbonded.get(id);
@@ -240,13 +283,38 @@ export async function saveUnbonded(timestamp: Date, blockNumber: bigint, account
     });
 }
 
+export async function saveSumUnbondedMonth(timestamp: Date, blockNumber: bigint, account: string, amount: bigint, eventID: string): Promise<void> {
+    let id = getId(blockNumber, eventID, account, timestamp, 'm')
+    logger.info("Saving SumUnbondedMonth for id!: " + id);
+
+    let record = await SumUnbondedMonth.get(id);
+    if (!record) {
+        record = SumUnbondedMonth.create({
+            id: id,
+            account: account,
+            blockNumber: blockNumber,
+            timestamp: timestamp
+        });
+    }
+    record.amount = record.amount?record.amount+BigInt(amount):BigInt(amount);
+    record.blockNumber = blockNumber;
+    record.timestamp = timestamp;
+
+    await record.save().then((res) => {
+        //logger.info("Reward added/saved =>"+ res)
+    })
+    .catch((err) => {
+        logger.info("SumUnbondedMonth err => " + err)
+    });
+}
+
 export async function getSumRewardMonth(timestamp: Date, blockNumber: bigint, account: string, amount: bigint, eventID: string): Promise<SumRewardMonth> {
-    let monthId = getId(blockNumber, eventID, account, timestamp, 'm')
+    let monthId = getAccountId(blockNumber, eventID, account, timestamp, 'm')
     return await SumRewardMonth.get(monthId)
 }
 
 export async function getSumRewardYear(timestamp: Date, blockNumber: bigint, account: string, amount: bigint, eventID: string): Promise<SumRewardYear> {
-    let yearId = getId(blockNumber, eventID, account, timestamp, 'y')
+    let yearId = getAccountId(blockNumber, eventID, account, timestamp, 'y')
     return await SumRewardYear.get(yearId)
 }
 
@@ -254,7 +322,7 @@ export async function getSumRewardLastMonth(timestamp: Date, blockNumber: bigint
     //logger.info("Month before " + timestamp)
     //timestamp.setUTCMonth(timestamp.getUTCMonth()-1)
     logger.info("Month " + timestamp)
-    let monthId = getId(blockNumber, eventID, account, timestamp, 'm')
+    let monthId = getAccountId(blockNumber, eventID, account, timestamp, 'm')
     return await SumRewardMonth.get(monthId)
 }
 
@@ -262,6 +330,6 @@ export async function getSumRewardLastYear(timestamp: Date, blockNumber: bigint,
     //logger.info("Year before " + timestamp)
     //timestamp.setUTCFullYear(timestamp.getUTCFullYear()-1)
     logger.info("Year " + timestamp)
-    let yearId = getId(blockNumber, eventID, account, timestamp, 'y')
+    let yearId = getAccountId(blockNumber, eventID, account, timestamp, 'y')
     return await SumRewardYear.get(yearId)
 }
