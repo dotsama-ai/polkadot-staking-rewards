@@ -44,7 +44,23 @@ type Bonded @entity {
   timestamp: Date
 }
 
+type SumBondedMonth @entity {
+  id: ID!
+  account: String
+  amount: BigInt
+  blockNumber: BigInt
+  timestamp: Date
+}
+
 type Unbonded @entity {
+  id: ID!
+  account: String
+  amount: BigInt
+  blockNumber: BigInt
+  timestamp: Date
+}
+
+type SumUnbondedMonth @entity {
   id: ID!
   account: String
   amount: BigInt

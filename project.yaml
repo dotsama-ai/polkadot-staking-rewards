@@ -15,55 +15,23 @@ dataSources:
     mapping:
       file: ./dist/index.js
       handlers:
-        - handler: handleBlock
-          kind: substrate/BlockHandler
-        #- handler: handleEvent
-        #  kind: substrate/EventHandler
-        #  filter:
-        #    module: balances
-        #    method: BalanceSet
-        #- handler: handleEvent
-        #  kind: substrate/EventHandler
-        #  filter:
-        #    module: balances
-        #    method: Deposit
-        #- handler: handleEvent
-        #  kind: substrate/EventHandler
-        #  filter:
-        #    module: balances
-        #    method: DustLost
-        #- handler: handleEvent
-        #  kind: substrate/EventHandler
-        #  filter:
-        #    module: balances
-        #    method: Endowed
-        #- handler: handleEvent
-        #  kind: substrate/EventHandler
-        #  filter:
-        #    module: balances
-        #    method: Reserved
-        #- handler: handleEvent
-        #  kind: substrate/EventHandler
-        #  filter:
-        #    module: balances
-        #    method: ReserveRepatriated
-        #- handler: handleEvent
-        #  kind: substrate/EventHandler
-        #  filter:
-        #    module: balances
-        #    method: Slashed
-        #- handler: handleEvent
-        #  kind: substrate/EventHandler
-        #  filter:
-        #    module: balances
-        #    method: Transfer
-        #- handler: handleEvent
-        #  kind: substrate/EventHandler
-        #  filter:
-        #    module: balances
-        #    method: Unreserved
-        #- handler: handleEvent
-        #  kind: substrate/EventHandler
-        #  filter:
-        #    module: balances
-        #    method: Withdraw
+        - handler: handleBonded
+          kind: substrate/EventHandler
+          filter:
+            module: staking
+            method: Bonded
+        - handler: handleUnbonded
+          kind: substrate/EventHandler
+          filter:
+            module: staking
+            method: Unbonded
+        - handler: handleRewarded
+          kind: substrate/EventHandler
+          filter:
+            module: staking
+            method: Rewarded
+        - handler: handleSlashed
+          kind: substrate/EventHandler
+          filter:
+            module: staking
+            method: Slashed
