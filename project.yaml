@@ -30,8 +30,3 @@ dataSources:
           filter:
             module: staking
             method: Rewarded
-        - handler: handleSlashed
-          kind: substrate/EventHandler
-          filter:
-            module: staking
-            method: Slashed
